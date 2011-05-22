@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Some benchmarks for upper limits on scanning speed
@@ -294,6 +295,7 @@ public class ScanSpeedTest {
     List<Callable<Void>> runs = new ArrayList<Callable<Void>>();
     final LinkedLongMemory finalHead = head;
     int cpus = Runtime.getRuntime().availableProcessors()*2;
+    final AtomicInteger hits = new AtomicInteger(0);
     for (int i = 0; i < cpus; i++) {
       runs.add(new Callable<Void>() {
         @Override
@@ -302,6 +304,7 @@ public class ScanSpeedTest {
             for (int i = 0; i < TIMES/BLOCKS; i++) {
               if (comparisons.contains(current.value.get(i))) {
                 current.value.get(i + 1);
+                hits.incrementAndGet();
               }
             }
           }
@@ -313,6 +316,7 @@ public class ScanSpeedTest {
     for (Future<Void> run : es.invokeAll(runs)){
       run.get();
     }
+    System.out.println(hits);
     System.out.println(cpus*TIMES/(System.currentTimeMillis() - start) + " per ms");
   }
 
