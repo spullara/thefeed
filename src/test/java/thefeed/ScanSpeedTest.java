@@ -287,21 +287,21 @@ public class ScanSpeedTest {
       current = new LinkedLongMemory(byteBuffer, current);
       current.next = tmp;
       head = current;
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
-        byteBuffer.put(0, r.nextLong() % 100000);
+      for (int i = 0; i < TIMES/BLOCKS*2; i+=2) {
+        byteBuffer.put(i, r.nextLong() % 100000);
       }
     }
     ExecutorService es = Executors.newCachedThreadPool();
     List<Callable<Void>> runs = new ArrayList<Callable<Void>>();
     final LinkedLongMemory finalHead = head;
-    int cpus = Runtime.getRuntime().availableProcessors()*2;
+    int cpus = Runtime.getRuntime().availableProcessors();
     final AtomicInteger hits = new AtomicInteger(0);
     for (int i = 0; i < cpus; i++) {
       runs.add(new Callable<Void>() {
         @Override
         public Void call() {
           for (LinkedLongMemory current = finalHead; current != null; current = current.next) {
-            for (int i = 0; i < TIMES/BLOCKS; i++) {
+            for (int i = 0; i < TIMES/BLOCKS*2; i+=2) {
               if (comparisons.contains(current.value.get(i))) {
                 current.value.get(i + 1);
                 hits.incrementAndGet();

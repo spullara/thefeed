@@ -1,0 +1,101 @@
+package thefeed;
+
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * Calibrate a platform to see how quickly it can scan entries. Run with -server and 2G of memory.
+ * <p/>
+ * User: sam
+ * Date: 5/22/11
+ * Time: 2:00 PM
+ */
+public class Calibrate {
+  public static void main(String[] args) throws ExecutionException, InterruptedException {
+    Calibrate.testConcurrentCompareLinkedListLongDirectMemory();
+  }
+
+  private static int RANGE = 100000;
+  private static int BLOCKS = 5000;
+  private static int TIMES = 30000000;
+  private static int BYTES_PER_ENTRY = 16;
+
+  public static void testConcurrentCompareLinkedListLongDirectMemory() throws InterruptedException, ExecutionException {
+    Random r = new Random();
+    final Set<Long> comparisons = new HashSet<Long>();
+    for (int i = 0; i < 1000; i++) {
+      comparisons.add((long) r.nextInt(RANGE));
+    }
+    LinkedFeed head = null;
+    LinkedFeed current = null;
+    for (int j = 0; j < BLOCKS; j++) {
+      LongBuffer byteBuffer = ByteBuffer.allocateDirect(TIMES / BLOCKS * BYTES_PER_ENTRY).asLongBuffer();
+      LinkedFeed tmp = current;
+      current = new LinkedFeed(byteBuffer, current);
+      current.next = tmp;
+      head = current;
+      for (int i = 0; i < TIMES / BLOCKS * 2; i += 2) {
+        byteBuffer.put(i, r.nextInt(RANGE));
+      }
+    }
+    System.out.println("CORES,TOTAL,PERCORE");
+    for (int cpus = 1; cpus <= Runtime.getRuntime().availableProcessors(); cpus++) {
+      ExecutorService es = Executors.newCachedThreadPool();
+      List<Callable<Void>> runs = new ArrayList<Callable<Void>>();
+      final LinkedFeed finalHead = head;
+      final AtomicInteger hits = new AtomicInteger(0);
+      for (int i = 0; i < cpus; i++) {
+        runs.add(new Callable<Void>() {
+          @Override
+          public Void call() {
+            for (LinkedFeed current = finalHead; current != null; current = current.next) {
+              LongBuffer value = current.value;
+              for (int i = 0; i < TIMES / BLOCKS * 2; i += 2) {
+                if (comparisons.contains(value.get(i))) {
+                  value.get(i + 1);
+                  hits.incrementAndGet();
+                }
+              }
+            }
+            return null;
+          }
+        });
+      }
+      long start = System.currentTimeMillis();
+      for (Future<Void> run : es.invokeAll(runs)) {
+        run.get();
+      }
+      long result = TIMES / (System.currentTimeMillis() - start);
+      es.shutdownNow();
+      System.out.println(cpus + "," + cpus * result + "," + result);
+    }
+  }
+
+  /**
+   * We create the feed by linking together reverse chronological epochs of entries.
+   * <p/>
+   * User: sam
+   * Date: 5/22/11
+   * Time: 2:01 PM
+   */
+  private static class LinkedFeed {
+    LongBuffer value;
+    LinkedFeed next;
+
+    public LinkedFeed(LongBuffer value, LinkedFeed next) {
+      this.value = value;
+      this.next = next;
+    }
+  }
+}
