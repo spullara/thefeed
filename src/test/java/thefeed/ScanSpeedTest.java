@@ -10,6 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Some benchmarks for upper limits on scanning speed
@@ -31,12 +36,16 @@ public class ScanSpeedTest {
 
   @Test
   public void testLinkedList() {
+    System.gc();
+    long free = Runtime.getRuntime().freeMemory();
     List<Entry> list = new LinkedList<Entry>();
     // Put 1 million entries in, scan them
     for (int i = 0; i < TIMES; i++) {
       Entry entry = new Entry();
       list.add(entry);
     }
+    System.gc();
+    System.out.println((free - Runtime.getRuntime().freeMemory()) / TIMES);
     {
       long start = System.currentTimeMillis();
       for (Entry entry : list) {
@@ -57,6 +66,8 @@ public class ScanSpeedTest {
 
   @Test
   public void testLinkedArrayLists() {
+    System.gc();
+    long free = Runtime.getRuntime().freeMemory();
     LinkedEntry head = null;
     // Put 1 million entries in, scan them
     for (int j = 0; j < BLOCKS; j++) {
@@ -67,6 +78,8 @@ public class ScanSpeedTest {
       }
       head = new LinkedEntry(sublist, head);
     }
+    System.gc();
+    System.out.println((free - Runtime.getRuntime().freeMemory())/TIMES);
     {
       long start = System.currentTimeMillis();
       for (LinkedEntry current = head; current != null; current = current.next) {
@@ -79,7 +92,11 @@ public class ScanSpeedTest {
 
   @Test
   public void testDirectMemory() {
+    System.gc();
+    long free = Runtime.getRuntime().freeMemory();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(TIMES * BYTES_PER_ENTRY);
+    System.gc();
+    System.out.println((free - Runtime.getRuntime().freeMemory())/TIMES);
     long start = System.currentTimeMillis();
     for (int i = 0; i < TIMES; i++) {
       byteBuffer.getLong(i* BYTES_PER_ENTRY);
@@ -108,6 +125,8 @@ public class ScanSpeedTest {
 
   @Test
   public void testLinkedListDirectMemory() {
+    System.gc();
+    long free = Runtime.getRuntime().freeMemory();
     LinkedMemory head = null;
     LinkedMemory current = null;
     for (int j = 0; j < BLOCKS; j++) {
@@ -117,6 +136,8 @@ public class ScanSpeedTest {
       current.next = tmp;
       head = current;
     }
+    System.gc();
+    System.out.println((free - Runtime.getRuntime().freeMemory())/TIMES);
     long start = System.currentTimeMillis();
     for (current = head; current != null; current = current.next) {
       for (int i = 0; i < TIMES/BLOCKS; i++) {
@@ -248,6 +269,51 @@ public class ScanSpeedTest {
     }
     System.out.println(hits);
     System.out.println(3*TIMES/(System.currentTimeMillis() - start) + " per ms");
+  }
+
+  @Test
+  public void testConcurrentCompareLinkedListLongDirectMemory() throws InterruptedException, ExecutionException {
+    Random r = new Random();
+    final Set<Long> comparisons = new HashSet<Long>();
+    for (int i = 0; i < 1000; i++) {
+      comparisons.add(r.nextLong() % 100000);
+    }
+    LinkedLongMemory head = null;
+    LinkedLongMemory current = null;
+    for (int j = 0; j < BLOCKS; j++) {
+      LongBuffer byteBuffer = ByteBuffer.allocateDirect(TIMES / BLOCKS * BYTES_PER_ENTRY).asLongBuffer();
+      LinkedLongMemory tmp = current;
+      current = new LinkedLongMemory(byteBuffer, current);
+      current.next = tmp;
+      head = current;
+      for (int i = 0; i < TIMES/BLOCKS; i++) {
+        byteBuffer.put(0, r.nextLong() % 100000);
+      }
+    }
+    ExecutorService es = Executors.newCachedThreadPool();
+    List<Callable<Void>> runs = new ArrayList<Callable<Void>>();
+    final LinkedLongMemory finalHead = head;
+    int cpus = Runtime.getRuntime().availableProcessors()*2;
+    for (int i = 0; i < cpus; i++) {
+      runs.add(new Callable<Void>() {
+        @Override
+        public Void call() {
+          for (LinkedLongMemory current = finalHead; current != null; current = current.next) {
+            for (int i = 0; i < TIMES/BLOCKS; i++) {
+              if (comparisons.contains(current.value.get(i))) {
+                current.value.get(i + 1);
+              }
+            }
+          }
+          return null;
+        }
+      });
+    }
+    long start = System.currentTimeMillis();
+    for (Future<Void> run : es.invokeAll(runs)){
+      run.get();
+    }
+    System.out.println(cpus*TIMES/(System.currentTimeMillis() - start) + " per ms");
   }
 
 }
