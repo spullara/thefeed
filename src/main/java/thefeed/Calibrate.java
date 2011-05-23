@@ -33,7 +33,7 @@ public class Calibrate {
 
   public static void testConcurrentCompareLinkedListLongDirectMemory() throws InterruptedException, ExecutionException {
     Random r = new Random();
-    FastIDSet comparisons = new FastIDSet(1000);
+    FastIDSet comparisons = new FastIDSet(10000);
     for (int i = 0; i < FOLLOWEES; i++) {
       comparisons.add((long) r.nextInt(RANGE));
     }
@@ -49,7 +49,7 @@ public class Calibrate {
         byteBuffer[i] = r.nextInt(RANGE);
       }
     }
-    System.out.println("CORES,TOTAL,PERCORE");
+    System.out.println("CORES,TOTAL,PERCORE,HITS");
     for (int cpus = 1; cpus <= Runtime.getRuntime().availableProcessors()*2; cpus++) {
       ExecutorService es = Executors.newCachedThreadPool();
       List<Callable<Void>> runs = new ArrayList<Callable<Void>>();
@@ -78,7 +78,7 @@ public class Calibrate {
       }
       long result = TIMES / (System.currentTimeMillis() - start);
       es.shutdownNow();
-      System.out.println(cpus + "," + cpus * result + "," + result);
+      System.out.println(cpus + "," + cpus * result + "," + result + "," + hits);
     }
   }
 

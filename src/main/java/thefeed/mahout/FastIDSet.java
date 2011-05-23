@@ -102,10 +102,11 @@ public final class FastIDSet implements Serializable, Cloneable {
     int theHashCode = (int) key & 0x7FFFFFFF; // make sure it's positive
     long[] keys = this.keys;
     int hashSize = keys.length;
-    int jump = 1 + theHashCode % (hashSize - 2);
     int index = theHashCode % hashSize;
     long currentKey = keys[index];
+    int jump = 0;
     while ((currentKey != NULL) && (key != currentKey)) { // note: true when currentKey == REMOVED
+      if (jump == 0) jump = 1 + theHashCode % (hashSize - 2);
       if (index < jump) {
         index += hashSize - jump;
       } else {
