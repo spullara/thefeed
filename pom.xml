@@ -15,13 +15,6 @@
   </properties>
 
   <dependencies>
-    <!-- Mahout -->
-    <dependency>
-      <groupId>org.apache.mahout</groupId>
-      <artifactId>mahout-core</artifactId>
-      <version>0.4</version>
-    </dependency>
-
     <!-- Testing -->
     <dependency>
       <groupId>junit</groupId>

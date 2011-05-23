@@ -1,6 +1,6 @@
 package thefeed;
 
-import org.apache.mahout.cf.taste.impl.common.FastIDSet;
+import thefeed.mahout.FastIDSet;
 
 import java.util.ArrayList;
 import java.util.List;
