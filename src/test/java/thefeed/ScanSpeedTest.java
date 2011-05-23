@@ -43,7 +43,7 @@ public class ScanSpeedTest {
     // Put 1 million entries in, scan them
     for (int i = 0; i < TIMES; i++) {
       Entry entry = new Entry();
-      list.add(entry);
+      list.add(0, entry);
     }
     System.gc();
     System.out.println((free - Runtime.getRuntime().freeMemory()) / TIMES);
@@ -51,7 +51,8 @@ public class ScanSpeedTest {
       long start = System.currentTimeMillis();
       for (Entry entry : list) {
       }
-      System.out.println(TIMES/(System.currentTimeMillis() - start) + " per ms");
+      System.out.println("Linked List");
+      System.out.println(TIMES / (System.currentTimeMillis() - start) + " per ms");
     }
   }
 
@@ -72,22 +73,23 @@ public class ScanSpeedTest {
     LinkedEntry head = null;
     // Put 1 million entries in, scan them
     for (int j = 0; j < BLOCKS; j++) {
-      List<Entry> sublist = new ArrayList<Entry>(TIMES/BLOCKS);
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
+      List<Entry> sublist = new ArrayList<Entry>(TIMES / BLOCKS);
+      for (int i = 0; i < TIMES / BLOCKS; i++) {
         Entry entry = new Entry();
         sublist.add(entry);
       }
       head = new LinkedEntry(sublist, head);
     }
     System.gc();
-    System.out.println((free - Runtime.getRuntime().freeMemory())/TIMES);
+    System.out.println((free - Runtime.getRuntime().freeMemory()) / TIMES);
     {
       long start = System.currentTimeMillis();
       for (LinkedEntry current = head; current != null; current = current.next) {
         for (Entry entry : current.value) {
         }
       }
-      System.out.println(TIMES/(System.currentTimeMillis() - start) + " per ms");
+      System.out.println("Linked Array Lists");
+      System.out.println(TIMES / (System.currentTimeMillis() - start) + " per ms");
     }
   }
 
@@ -97,21 +99,14 @@ public class ScanSpeedTest {
     long free = Runtime.getRuntime().freeMemory();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(TIMES * BYTES_PER_ENTRY);
     System.gc();
-    System.out.println((free - Runtime.getRuntime().freeMemory())/TIMES);
+    System.out.println((free - Runtime.getRuntime().freeMemory()) / TIMES);
     long start = System.currentTimeMillis();
     for (int i = 0; i < TIMES; i++) {
-      byteBuffer.getLong(i* BYTES_PER_ENTRY);
-      byteBuffer.getLong(i* BYTES_PER_ENTRY +8);
+      byteBuffer.getLong(i * BYTES_PER_ENTRY);
+      byteBuffer.getLong(i * BYTES_PER_ENTRY + 8);
     }
-    for (int i = 0; i < TIMES; i++) {
-      byteBuffer.getLong(i* BYTES_PER_ENTRY);
-      byteBuffer.getLong(i* BYTES_PER_ENTRY +8);
-    }
-    for (int i = 0; i < TIMES; i++) {
-      byteBuffer.getLong(i* BYTES_PER_ENTRY);
-      byteBuffer.getLong(i* BYTES_PER_ENTRY +8);
-    }
-    System.out.println(3*TIMES/(System.currentTimeMillis() - start) + " per ms");
+    System.out.println("Direct Memory");
+    System.out.println(TIMES / (System.currentTimeMillis() - start) + " per ms");
   }
 
   static class LinkedMemory {
@@ -138,27 +133,16 @@ public class ScanSpeedTest {
       head = current;
     }
     System.gc();
-    System.out.println((free - Runtime.getRuntime().freeMemory())/TIMES);
+    System.out.println((free - Runtime.getRuntime().freeMemory()) / TIMES);
     long start = System.currentTimeMillis();
     for (current = head; current != null; current = current.next) {
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
+      for (int i = 0; i < TIMES / BLOCKS; i++) {
         current.value.getLong(i * BYTES_PER_ENTRY);
         current.value.getLong(i * BYTES_PER_ENTRY + 8);
       }
     }
-    for (current = head; current != null; current = current.next) {
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
-        current.value.getLong(i * BYTES_PER_ENTRY);
-        current.value.getLong(i * BYTES_PER_ENTRY + 8);
-      }
-    }
-    for (current = head; current != null; current = current.next) {
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
-        current.value.getLong(i * BYTES_PER_ENTRY);
-        current.value.getLong(i * BYTES_PER_ENTRY + 8);
-      }
-    }
-    System.out.println(3*TIMES/(System.currentTimeMillis() - start) + " per ms");
+    System.out.println("Linked List Direct Memory");
+    System.out.println(TIMES / (System.currentTimeMillis() - start) + " per ms");
   }
 
   @Test
@@ -169,15 +153,8 @@ public class ScanSpeedTest {
       byteBuffer.get(i);
       byteBuffer.get(i + 1);
     }
-    for (int i = 0; i < TIMES; i++) {
-      byteBuffer.get(i);
-      byteBuffer.get(i + 1);
-    }
-    for (int i = 0; i < TIMES; i++) {
-      byteBuffer.get(i);
-      byteBuffer.get(i + 1);
-    }
-    System.out.println(3*TIMES/(System.currentTimeMillis() - start) + " per ms");
+    System.out.println("Long Direct Memory");
+    System.out.println(3 * TIMES / (System.currentTimeMillis() - start) + " per ms");
   }
 
   static class LinkedLongMemory {
@@ -203,24 +180,13 @@ public class ScanSpeedTest {
     }
     long start = System.currentTimeMillis();
     for (current = head; current != null; current = current.next) {
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
+      for (int i = 0; i < TIMES / BLOCKS; i++) {
         current.value.get(i);
         current.value.get(i + 1);
       }
     }
-    for (current = head; current != null; current = current.next) {
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
-        current.value.get(i);
-        current.value.get(i + 1);
-      }
-    }
-    for (current = head; current != null; current = current.next) {
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
-        current.value.get(i);
-        current.value.get(i + 1);
-      }
-    }
-    System.out.println(3*TIMES/(System.currentTimeMillis() - start) + " per ms");
+    System.out.println("Linked List Long Direct Memory");
+    System.out.println(TIMES / (System.currentTimeMillis() - start) + " per ms");
   }
 
   @Test
@@ -233,43 +199,75 @@ public class ScanSpeedTest {
     LinkedLongMemory head = null;
     LinkedLongMemory current = null;
     for (int j = 0; j < BLOCKS; j++) {
-      LongBuffer byteBuffer = ByteBuffer.allocateDirect(TIMES / BLOCKS * BYTES_PER_ENTRY).asLongBuffer();
+      LongBuffer buffer = LongBuffer.allocate(TIMES / BLOCKS * 2);
       LinkedLongMemory tmp = current;
-      current = new LinkedLongMemory(byteBuffer, current);
+      current = new LinkedLongMemory(buffer, current);
       current.next = tmp;
       head = current;
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
-        byteBuffer.put(0, r.nextLong() % 100000);
+      for (int i = 0; i < TIMES / BLOCKS * 2; i+=2) {
+        buffer.put(i, r.nextLong() % 100000);
       }
     }
-    int hits = 0;
-    long start = System.currentTimeMillis();
-    for (current = head; current != null; current = current.next) {
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
-        if (comparisons.contains(current.value.get(i))) {
-          current.value.get(i + 1);
-          hits++;
+    while (true) {
+      int hits = 0;
+      long start = System.currentTimeMillis();
+      for (current = head; current != null; current = current.next) {
+        for (int i = 0; i < TIMES / BLOCKS * 2; i+=2) {
+          if (comparisons.contains(current.value.get(i))) {
+            current.value.get(i + 1);
+            hits++;
+          }
         }
       }
+      System.out.println("Compare Linked List Long Direct Memory");
+      System.out.println(hits);
+      System.out.println(TIMES / (System.currentTimeMillis() - start) + " per ms");
     }
-    for (current = head; current != null; current = current.next) {
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
-        if (comparisons.contains(current.value.get(i))) {
-          current.value.get(i + 1);
-          hits++;
-        }
+  }
+
+  static class LinkedLongArray {
+    long[] value;
+    LinkedLongArray next;
+
+    public LinkedLongArray(long[] value, LinkedLongArray next) {
+      this.value = value;
+      this.next = next;
+    }
+  }
+
+  @Test
+  public void testCompareLinkedListLongArray() {
+    Random r = new Random();
+    Set<Long> comparisons = new HashSet<Long>();
+    for (int i = 0; i < 1000; i++) {
+      comparisons.add(r.nextLong() % 100000);
+    }
+    LinkedLongArray head = null;
+    LinkedLongArray current = null;
+    for (int j = 0; j < BLOCKS; j++) {
+      long[] buffer = new long[TIMES / BLOCKS * 2];
+      LinkedLongArray tmp = current;
+      current = new LinkedLongArray(buffer, current);
+      current.next = tmp;
+      head = current;
+      for (int i = 0; i < TIMES / BLOCKS * 2; i+=2) {
+        buffer[i] = r.nextLong() % 100000;
       }
     }
-    for (current = head; current != null; current = current.next) {
-      for (int i = 0; i < TIMES/BLOCKS; i++) {
-        if (comparisons.contains(current.value.get(i))) {
-          current.value.get(i + 1);
-          hits++;
+    while (true) {
+      int hits = 0;
+      long start = System.currentTimeMillis();
+      for (current = head; current != null; current = current.next) {
+        for (int i = 0; i < TIMES / BLOCKS * 2; i+=2) {
+          if (comparisons.contains(current.value[i])) {
+            hits++;
+          }
         }
       }
+      System.out.println("Compare Linked List Long Direct Memory");
+      System.out.println(hits);
+      System.out.println(TIMES / (System.currentTimeMillis() - start) + " per ms");
     }
-    System.out.println(hits);
-    System.out.println(3*TIMES/(System.currentTimeMillis() - start) + " per ms");
   }
 
   @Test
@@ -287,7 +285,7 @@ public class ScanSpeedTest {
       current = new LinkedLongMemory(byteBuffer, current);
       current.next = tmp;
       head = current;
-      for (int i = 0; i < TIMES/BLOCKS*2; i+=2) {
+      for (int i = 0; i < TIMES / BLOCKS * 2; i += 2) {
         byteBuffer.put(i, r.nextLong() % 100000);
       }
     }
@@ -301,7 +299,7 @@ public class ScanSpeedTest {
         @Override
         public Void call() {
           for (LinkedLongMemory current = finalHead; current != null; current = current.next) {
-            for (int i = 0; i < TIMES/BLOCKS*2; i+=2) {
+            for (int i = 0; i < TIMES / BLOCKS * 2; i += 2) {
               if (comparisons.contains(current.value.get(i))) {
                 current.value.get(i + 1);
                 hits.incrementAndGet();
@@ -313,11 +311,97 @@ public class ScanSpeedTest {
       });
     }
     long start = System.currentTimeMillis();
-    for (Future<Void> run : es.invokeAll(runs)){
+    for (Future<Void> run : es.invokeAll(runs)) {
       run.get();
     }
     System.out.println(hits);
-    System.out.println(cpus*TIMES/(System.currentTimeMillis() - start) + " per ms");
+    System.out.println(cpus * TIMES / (System.currentTimeMillis() - start) + " per ms");
+  }
+
+  @Test
+  public void testLinkedList2() throws InterruptedException, ExecutionException {
+    Random r = new Random();
+    final Set<Long> comparisons = new HashSet<Long>();
+    for (int i = 0; i < 1000; i++) {
+      comparisons.add(r.nextLong() % 100000);
+    }
+    final List<Entry> list = new LinkedList<Entry>();
+    for (int j = 0; j < TIMES; j++) {
+      Entry e = new Entry();
+      e.postid = j;
+      e.userid = r.nextInt(100000);
+      list.add(0, e);
+    }
+    ExecutorService es = Executors.newCachedThreadPool();
+    List<Callable<Void>> runs = new ArrayList<Callable<Void>>();
+    int cpus = Runtime.getRuntime().availableProcessors();
+    final AtomicInteger hits = new AtomicInteger(0);
+    for (int i = 0; i < cpus; i++) {
+      runs.add(new Callable<Void>() {
+        @Override
+        public Void call() {
+          for (Entry entry : list) {
+            if (comparisons.contains(entry.userid)) {
+              hits.incrementAndGet();
+            }
+          }
+          return null;
+        }
+      });
+    }
+    long start = System.currentTimeMillis();
+    for (Future<Void> run : es.invokeAll(runs)) {
+      run.get();
+    }
+    System.out.println(hits);
+    System.out.println(cpus * TIMES / (System.currentTimeMillis() - start) + " per ms");
+  }
+
+  @Test
+  public void testLinkedListOfArrayLists() throws InterruptedException, ExecutionException {
+    Random r = new Random();
+    final Set<Long> comparisons = new HashSet<Long>();
+    for (int i = 0; i < 1000; i++) {
+      comparisons.add(r.nextLong() % 100000);
+    }
+    LinkedEntry head = null;
+    // Put 1 million entries in, scan them
+    for (int j = 0; j < BLOCKS; j++) {
+      List<Entry> sublist = new ArrayList<Entry>(TIMES / BLOCKS);
+      for (int i = 0; i < TIMES / BLOCKS; i++) {
+        Entry e = new Entry();
+        e.postid = j;
+        e.userid = r.nextInt(100000);
+        sublist.add(e);
+      }
+      head = new LinkedEntry(sublist, head);
+    }
+    ExecutorService es = Executors.newCachedThreadPool();
+    List<Callable<Void>> runs = new ArrayList<Callable<Void>>();
+    int cpus = Runtime.getRuntime().availableProcessors();
+    final AtomicInteger hits = new AtomicInteger(0);
+    for (int i = 0; i < cpus; i++) {
+      final LinkedEntry finalHead = head;
+      runs.add(new Callable<Void>() {
+        @Override
+        public Void call() {
+          for (LinkedEntry current = finalHead; current != null; current = current.next) {
+            for (Entry entry : current.value) {
+              if (comparisons.contains(entry.userid)) {
+                hits.incrementAndGet();
+              }
+            }
+          }
+          return null;
+        }
+      });
+    }
+    long start = System.currentTimeMillis();
+    for (Future<Void> run : es.invokeAll(runs)) {
+      run.get();
+    }
+    System.out.println(hits);
+    System.out.println(cpus * TIMES / (System.currentTimeMillis() - start) + " per ms");
   }
 
 }
