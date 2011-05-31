@@ -78,6 +78,13 @@ public class OpenCL {
       longBuffer.unmap(queue, feed);
     }
 
+    while(true) {
+      test(context, kernel, queue, length, clSetBuffer, head);
+    }
+  }
+
+  private static void test(CLContext context, CLKernel kernel, CLQueue queue, int length, CLLongBuffer clSetBuffer, LinkedFeed head) {
+    LinkedFeed current;
     long start = System.currentTimeMillis();
     long hits = 0;
     System.out.println("TOTAL,HITS");
@@ -107,8 +114,8 @@ public class OpenCL {
   }
 
   private static int RANGE = 100000;
-  private static int BLOCKS = 10;
-  private static int TIMES = 30000000;
+  private static int BLOCKS = 4;
+  private static int TIMES = 100000000;
 
   /**
    * We create the feed by linking together reverse chronological epochs of entries.
