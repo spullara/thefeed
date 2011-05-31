@@ -24,14 +24,6 @@ public class Calibrate {
   private static final int FOLLOWEES = 1000;
 
   public static void main(String[] args) throws ExecutionException, InterruptedException {
-    Calibrate.testConcurrentCompareLinkedListLongDirectMemory();
-  }
-
-  private static int RANGE = 100000;
-  private static int BLOCKS = 5000;
-  private static int TIMES = 30000000;
-
-  public static void testConcurrentCompareLinkedListLongDirectMemory() throws InterruptedException, ExecutionException {
     Random r = new Random();
     FastIDSet comparisons = new FastIDSet(10000);
     for (int i = 0; i < FOLLOWEES; i++) {
@@ -81,6 +73,10 @@ public class Calibrate {
       System.out.println(cpus + "," + cpus * result + "," + result + "," + hits);
     }
   }
+
+  private static int RANGE = 100000;
+  private static int BLOCKS = 5000;
+  private static int TIMES = 30000000;
 
   /**
    * We create the feed by linking together reverse chronological epochs of entries.

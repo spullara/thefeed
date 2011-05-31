@@ -19,6 +19,7 @@ package thefeed.mahout;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @see FastByIDMap
@@ -94,6 +95,7 @@ public final class FastIDSet implements Serializable, Cloneable {
     return false;
   }
 
+  public AtomicInteger jumps = new AtomicInteger(0);
 
   /**
    * @see #findForAdd(long)
@@ -121,9 +123,9 @@ public final class FastIDSet implements Serializable, Cloneable {
    * @see #find(long)
    */
   private int findForAdd(long key) {
-    int theHashCode = (int) key & 0x7FFFFFFF; // make sure it's positive
     long[] keys = this.keys;
     int hashSize = keys.length;
+    int theHashCode = (int) key & 0x7FFFFFFF; // make sure it's positive
     int jump = 1 + theHashCode % (hashSize - 2);
     int index = theHashCode % hashSize;
     long currentKey = keys[index];
@@ -138,7 +140,11 @@ public final class FastIDSet implements Serializable, Cloneable {
     }
     return index;
   }
-  
+
+  public long[] getKeys() {
+    return keys;
+  }
+
   public int size() {
     return numEntries;
   }

@@ -13,8 +13,31 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  <repositories>
+    <repository>
+      <id>nativelibs4java</id>
+      <url>http://nativelibs4java.sourceforge.net/maven</url>
+    </repository>
+    <repository>
+      <id>jnaerator</id>
+      <url>http://jnaerator.sourceforge.net/maven</url>
+    </repository>
+  </repositories>
 
   <dependencies>
+    <dependency>
+      <groupId>com.github.spullara.mojava</groupId>
+      <artifactId>mojava</artifactId>
+      <version>0.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.nativelibs4java</groupId>
+      <artifactId>javacl</artifactId>
+      <version>1.0-beta-6</version>
+      <scope>compile</scope>
+    </dependency>
+
     <!-- Testing -->
     <dependency>
       <groupId>junit</groupId>
@@ -45,7 +68,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-
         <configuration>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -56,7 +78,6 @@
             </manifest>
           </archive>
         </configuration>
-
         <executions>
           <execution>
             <id>make-assembly</id>
@@ -66,7 +87,6 @@
             </goals>
           </execution>
         </executions>
-
       </plugin>
     </plugins>
   </build>
