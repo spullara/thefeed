@@ -1,6 +1,7 @@
 package thefeed;
 
 import thefeed.mahout.FastIDSet;
+import thefeed.mahout.FastIDSet2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,15 @@ public class Calibrate {
 
   public static void main(String[] args) throws ExecutionException, InterruptedException {
     Random r = new Random();
-    FastIDSet comparisons = new FastIDSet(10000);
+    FollowSet comparisons = null;
+    if (args.length > 0) {
+      if (args[0].equals("2")) {
+        comparisons = new FastIDSet2(10000);
+      }
+    }
+    if (comparisons == null) {
+      comparisons = new FastIDSet(10000);
+    }
     for (int i = 0; i < FOLLOWEES; i++) {
       comparisons.add((long) r.nextInt(RANGE));
     }
@@ -41,6 +50,7 @@ public class Calibrate {
         byteBuffer[i] = r.nextInt(RANGE);
       }
     }
+    System.out.println(comparisons.getClass().getName());
     System.out.println("CORES,TOTAL,PERCORE,HITS");
     for (int cpus = 1; cpus <= Runtime.getRuntime().availableProcessors()*2; cpus++) {
       ExecutorService es = Executors.newCachedThreadPool();
@@ -48,7 +58,7 @@ public class Calibrate {
       final LinkedFeed finalHead = head;
       final AtomicInteger hits = new AtomicInteger(0);
       for (int i = 0; i < cpus; i++) {
-        final FastIDSet finalComparisons = comparisons;
+        final FollowSet finalComparisons = comparisons;
         runs.add(new Callable<Void>() {
           @Override
           public Void call() {

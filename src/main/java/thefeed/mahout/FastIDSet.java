@@ -17,14 +17,15 @@
 
 package thefeed.mahout;
 
-import java.io.Serializable;
+import thefeed.FollowSet;
+
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @see FastByIDMap
  */
-public final class FastIDSet implements Serializable, Cloneable {
+public final class FastIDSet implements FollowSet {
   
   private static final double ALLOWED_LOAD_FACTOR = 1.5;
   

@@ -9,7 +9,6 @@ import com.nativelibs4java.opencl.CLIntBuffer;
 import com.nativelibs4java.opencl.CLKernel;
 import com.nativelibs4java.opencl.CLLongBuffer;
 import com.nativelibs4java.opencl.CLMem;
-import com.nativelibs4java.opencl.CLPlatform;
 import com.nativelibs4java.opencl.CLProgram;
 import com.nativelibs4java.opencl.CLQueue;
 import com.nativelibs4java.opencl.JavaCL;
@@ -38,7 +37,7 @@ public class OpenCL {
   private static final int FOLLOWEES = 1000;
 
   public static void main(String[] args) throws ExecutionException, InterruptedException, CLBuildException, IOException {
-    CLContext context = JavaCL.createBestContext(CLPlatform.DeviceFeature.CPU);
+    CLContext context = JavaCL.createBestContext();
     StringBuffer sb = new StringBuffer();
     Files.copy(new File("src/main/resources/feedscan.cl"), Charsets.UTF_8, sb);
     String myKernelSource = sb.toString();
@@ -115,7 +114,7 @@ public class OpenCL {
 
   private static int RANGE = 100000;
   private static int BLOCKS = 4;
-  private static int TIMES = 100000000;
+  private static int TIMES = 30000000;
 
   /**
    * We create the feed by linking together reverse chronological epochs of entries.
