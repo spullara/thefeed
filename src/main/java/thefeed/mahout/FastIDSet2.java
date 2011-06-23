@@ -20,7 +20,6 @@ package thefeed.mahout;
 import thefeed.FollowSet;
 
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @see FastByIDMap
@@ -37,11 +36,17 @@ public final class FastIDSet2 implements FollowSet {
   private long[] keys;
   private int numEntries;
   private int numSlotsUsed;
+  private int mask;
 
   public FastIDSet2(int size) {
     int hashSize = nextPowerOfTwo((int) (ALLOWED_LOAD_FACTOR * size));
     keys = new long[hashSize];
+    mask = hashSize - 1;
     Arrays.fill(keys, NULL);
+  }
+
+  @Override
+  public void report() {
   }
 
   public static final int MAX_INT_SMALLER_TWIN_PRIME = 2147482949;
@@ -54,52 +59,21 @@ public final class FastIDSet2 implements FollowSet {
     return (int) (Math.pow(2, (int) v + 1));
   }
 
-  public AtomicInteger jumps = new AtomicInteger(0);
-
   /**
    * @see #findForAdd(long)
    */
   private int find(long key) {
-    int theHashCode = (int) (key * 2 & 0x7FFFFFFF); // make sure it's positive
     long[] keys = this.keys;
-    int mask = keys.length - 1;
-    int index = theHashCode & mask;
+    int mask = this.mask;
+    int index = (int) key & mask;
     long currentKey = keys[index];
-    int jump = 0;
-    while ((currentKey != NULL) && (key != currentKey)) { // note: true when currentKey == REMOVED
-      if (jump == 0) jump = (theHashCode  + 2) & mask;
-      if (index < jump) {
-        index += mask - jump;
-      } else {
-        index -= jump;
-      }
+    while ((key != currentKey) && (currentKey != NULL)) { // note: true when currentKey == REMOVED
+      index = (index + 1) & mask;
       currentKey = keys[index];
     }
     return index;
   }
   
-  /**
-   * @see #find(long)
-   */
-  private int findForAdd(long key) {
-    long[] keys = this.keys;
-    int mask = keys.length - 1;
-    int theHashCode = (int) (key * 2 & 0x7FFFFFFF); // make sure it's positive
-    int index = theHashCode & mask;
-    long currentKey = keys[index];
-    int jump = 0;
-    while ((currentKey != NULL) && (currentKey != REMOVED) && (key != currentKey)) { // Different
-      if (jump == 0) jump = (theHashCode  + 2) & mask;
-      if (index < jump) {
-        index += mask - jump;
-      } else {
-        index -= jump;
-      }
-      currentKey = keys[index];
-    }
-    return index;
-  }
-
   public boolean contains(long key) {
     return (key != NULL) && (key != REMOVED) && (keys[find(key)] != NULL);
   }
@@ -116,12 +90,13 @@ public final class FastIDSet2 implements FollowSet {
       }
     }
     // Here we may later consider implementing Brent's variation described on page 532
-    int index = findForAdd(key);
-    long keyIndex = keys[index];
-    if (keyIndex != key) {
+    int index = find(key);
+    long found = keys[index];
+    if (found != key) {
+      // assert found == NULL
       keys[index] = key;
       numEntries++;
-      if (keyIndex == NULL) {
+      if (found == NULL) {
         numSlotsUsed++;
       }
       return true;
@@ -145,6 +120,7 @@ public final class FastIDSet2 implements FollowSet {
     numEntries = 0;
     numSlotsUsed = 0;
     keys = new long[newHashSize];
+    mask = newHashSize - 1;
     Arrays.fill(keys, NULL);
     int length = oldKeys.length;
     for (int i = 0; i < length; i++) {

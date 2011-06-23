@@ -26,7 +26,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @see FastByIDMap
  */
 public final class FastIDSet implements FollowSet {
-  
+
+  @Override
+  public void report() {
+    System.out.println(total + " " + collisions);
+  }
+
+  public AtomicInteger collisions = new AtomicInteger(0);
+  public AtomicInteger total = new AtomicInteger(0);
+
   private static final double ALLOWED_LOAD_FACTOR = 1.5;
   
   /** Dummy object used to represent a key that has been removed. */

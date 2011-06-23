@@ -81,6 +81,7 @@ public class Calibrate {
       long result = TIMES / (System.currentTimeMillis() - start);
       es.shutdownNow();
       System.out.println(cpus + "," + cpus * result + "," + result + "," + hits);
+      comparisons.report();
     }
   }
 
