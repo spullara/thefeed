@@ -9,11 +9,11 @@ import com.nativelibs4java.opencl.CLIntBuffer;
 import com.nativelibs4java.opencl.CLKernel;
 import com.nativelibs4java.opencl.CLLongBuffer;
 import com.nativelibs4java.opencl.CLMem;
+import com.nativelibs4java.opencl.CLPlatform;
 import com.nativelibs4java.opencl.CLProgram;
 import com.nativelibs4java.opencl.CLQueue;
 import com.nativelibs4java.opencl.JavaCL;
 import com.sun.tools.javac.util.Pair;
-import thefeed.mahout.FastIDSet;
 import thefeed.mahout.FastIDSet2;
 
 import java.io.File;
@@ -38,7 +38,7 @@ public class OpenCL {
   private static final int FOLLOWEES = 1000;
 
   public static void main(String[] args) throws ExecutionException, InterruptedException, CLBuildException, IOException {
-    CLContext context = JavaCL.createBestContext();
+    CLContext context = JavaCL.createBestContext(CLPlatform.DeviceFeature.CPU);
     StringBuffer sb = new StringBuffer();
     Files.copy(new File("src/main/resources/feedscan.cl"), Charsets.UTF_8, sb);
     String myKernelSource = sb.toString();
