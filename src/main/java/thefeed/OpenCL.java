@@ -14,6 +14,7 @@ import com.nativelibs4java.opencl.CLQueue;
 import com.nativelibs4java.opencl.JavaCL;
 import com.sun.tools.javac.util.Pair;
 import thefeed.mahout.FastIDSet;
+import thefeed.mahout.FastIDSet2;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class OpenCL {
     ByteOrder order = context.getByteOrder();
 
     Random r = new Random();
-    FastIDSet comparisons = new FastIDSet(10000);
+    FollowSet comparisons = new FastIDSet2(10000);
     for (int i = 0; i < FOLLOWEES; i++) {
       comparisons.add((long) r.nextInt(RANGE));
     }

@@ -77,7 +77,11 @@ public final class FastIDSet2 implements FollowSet {
   public boolean contains(long key) {
     return (key != NULL) && (key != REMOVED) && (keys[find(key)] != NULL);
   }
-  
+
+  public long[] getKeys() {
+    return keys;
+  }
+
   public boolean add(long key) {
     // If less than half the slots are open, let's clear it up
     if (numSlotsUsed * ALLOWED_LOAD_FACTOR >= keys.length) {

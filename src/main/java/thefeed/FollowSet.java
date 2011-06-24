@@ -13,4 +13,7 @@ public interface FollowSet {
   boolean contains(long l);
 
   void report();
+
+  long[] getKeys();
+
 }
